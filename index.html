@@ -1172,6 +1172,28 @@
       const result = document.getElementById('resultado');
       const status = document.getElementById('status');
 
+      // CERTIFY®: mantém a interface visual existente e adapta apenas
+      // a leitura dos dados para CREDENCIAIS institucionais/individuais
+      // e para os registros legados C-PEACE®.
+      const credencial = String(data.tipo || '').toUpperCase();
+      const individual = credencial === 'INDIVIDUAL' || credencial === 'PESSOAL';
+      const titular = data.titular || '';
+      const instituicao = data.estabelecimento || data.instituicao || '';
+      const cidade = data.cidade || '';
+      const produto = data.produto || 'C-PEACE®';
+      const capacitacao = data.capacitacao || '';
+      const modalidade = data.modalidade || '';
+      const cargaHoraria = data.cargaHoraria || '';
+
+      function contextoPublico() {
+        const partes = [];
+        if (produto) partes.push(esc(produto));
+        if (capacitacao) partes.push('Capacitação ' + esc(capacitacao));
+        if (modalidade) partes.push(esc(modalidade));
+        if (cargaHoraria) partes.push(esc(cargaHoraria));
+        return partes.join(' · ');
+      }
+
       function renderMobile(data) {
         const ms = document.getElementById('cpm-status');
         if (!ms) return;
@@ -1195,12 +1217,31 @@
           (ativoMobile ? '✓ REGISTRO C-PEACE® ATIVO' : '● STATUS: ' + esc(data.status)) +
           '</div>';
 
-        document.getElementById('cpm-estabelecimento').textContent = data.estabelecimento || '—';
-        document.getElementById('cpm-cidade').textContent = data.cidade || '';
+        const estabelecimentoEl = document.getElementById('cpm-estabelecimento');
+        const cidadeEl = document.getElementById('cpm-cidade');
+        if (estabelecimentoEl) estabelecimentoEl.textContent = individual ? (titular || '—') : (instituicao || '—');
+        if (cidadeEl) {
+          cidadeEl.textContent = individual
+            ? [instituicao, cidade].filter(Boolean).join(' · ')
+            : cidade;
+        }
+
+        const labelEl = document.querySelector('.cpm-establishment .cpm-label');
+        if (labelEl) labelEl.textContent = individual ? 'Titular da credencial' : 'Estabelecimento';
+
         document.getElementById('cpm-codigo').textContent = data.codigo || '—';
         document.getElementById('cpm-status-text').textContent = data.status || '—';
         document.getElementById('cpm-validade').textContent = data.validade || '—';
         document.getElementById('cpm-emissao').textContent = data.emissao || '—';
+
+        const verificacao = document.getElementById('cpm-verification');
+        if (verificacao) {
+          const contexto = contextoPublico();
+          verificacao.innerHTML =
+            '<strong>Registro verificável.</strong><br>' +
+            'Esta consulta confirma a credencial ' + (individual ? 'individual' : 'institucional') +
+            ' na base H2LM CERTIFY®.' + (contexto ? '<br>' + contexto : '');
+        }
       }
 
       renderMobile(data);
@@ -1221,18 +1262,25 @@
         </div>
       `;
 
+      const labelPrincipal = individual ? 'Titular da credencial' : 'Estabelecimento';
+      const valorPrincipal = individual ? (titular || '—') : (instituicao || '—');
+      const valorCidade = individual
+        ? [instituicao, cidade].filter(Boolean).join(' · ')
+        : (cidade || '—');
+      const contexto = contextoPublico();
+
       result.innerHTML = `
         <div class="section-title">Dados do registro</div>
 
         <div class="grid">
           <div class="item">
-            <div class="label">Estabelecimento</div>
-            <div class="value">${esc(data.estabelecimento)}</div>
+            <div class="label">${labelPrincipal}</div>
+            <div class="value">${esc(valorPrincipal)}</div>
           </div>
 
           <div class="item">
-            <div class="label">Cidade</div>
-            <div class="value">${esc(data.cidade)}</div>
+            <div class="label">${individual ? 'Instituição / Cidade' : 'Cidade'}</div>
+            <div class="value">${esc(valorCidade)}</div>
           </div>
 
           <div class="item">
@@ -1258,8 +1306,8 @@
 
         <div class="verification">
           <strong>Registro verificável.</strong><br>
-          Esta consulta confirma o registro do estabelecimento na base de validação
-          C-PEACE® da H2LM Gestão &amp; Saúde.
+          Esta consulta confirma a credencial ${individual ? 'individual' : 'institucional'}
+          na base H2LM CERTIFY®${contexto ? '<br>' + contexto : ''}.
         </div>
       `;
     }
