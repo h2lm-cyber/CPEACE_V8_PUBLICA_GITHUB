@@ -1066,7 +1066,7 @@
 
     <header class="header">
       <img class="brand" alt="H2LM Gestão & Saúde"
-           src="H2LM_LOGO_MASTER_FUNDO.png">
+           src="https://h2lm-cyber.github.io/CPEACE_V8_PUBLICA_GITHUB/H2LM_LOGO_MASTER_FUNDO.png">
 
       <div class="header-copy">
         <div class="eyebrow">Sistema institucional</div>
@@ -1106,7 +1106,7 @@
   <main class="cpeace-mobile" aria-label="Cartão digital de validação C-PEACE®">
     <article class="cpm-card">
       <header class="cpm-top">
-        <img class="cpm-brand" alt="H2LM Gestão & Saúde" src="H2LM_LOGO_MASTER_FUNDO.png">
+        <img class="cpm-brand" alt="H2LM Gestão & Saúde" src="https://h2lm-cyber.github.io/CPEACE_V8_PUBLICA_GITHUB/H2LM_LOGO_MASTER_FUNDO.png">
         <div class="cpm-divider"></div>
         <p class="cpm-top-title">Validação oficial C-PEACE®</p>
       </header>
@@ -1231,8 +1231,8 @@
 
         document.getElementById('cpm-codigo').textContent = data.codigo || '—';
         document.getElementById('cpm-status-text').textContent = data.status || '—';
-        document.getElementById('cpm-validade').textContent = data.validade || '—';
-        document.getElementById('cpm-emissao').textContent = data.emissao || '—';
+        document.getElementById('cpm-validade').textContent = formatarDataBR(data.validade);
+document.getElementById('cpm-emissao').textContent = formatarDataBR(data.emissao);
 
         const verificacao = document.getElementById('cpm-verification');
         if (verificacao) {
@@ -1295,12 +1295,12 @@
 
           <div class="item">
             <div class="label">Data de emissão</div>
-            <div class="value">${esc(data.emissao)}</div>
+            <div class="value">${esc(formatarDataBR(data.emissao))}</div>
           </div>
 
           <div class="item">
             <div class="label">Validade</div>
-            <div class="value">${esc(data.validade)}</div>
+            <div class="value">${esc(formatarDataBR(data.validade))}</div>
           </div>
         </div>
 
@@ -1311,7 +1311,24 @@
         </div>
       `;
     }
+function formatarDataBR(valor) {
+  if (!valor || valor === '—') return '—';
 
+  const data = new Date(valor);
+
+  if (isNaN(data.getTime())) {
+    return valor;
+  }
+
+  return data.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'America/Boa_Vista'
+  });
+}
+
+    
     function esc(value) {
       return String(value ?? '').replace(/[&<>"']/g, function(c) {
         return {
